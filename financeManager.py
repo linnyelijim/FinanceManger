@@ -4,6 +4,7 @@ from datetime import datetime
 import time
 
 lindsey = ["LJ_capOne_2022.csv", "LJ_capOne_2023.csv"]
+jared = ["JH_capOne_2022.csv", "JH_capOne_2023.csv"]
 months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 transactions = []
 
@@ -18,6 +19,29 @@ def switch(date):
     except ValueError:
         print("Invalid date format. Please use 'YYYY-MM-DD'.")
         return "undefined"
+
+# Will sort transactions into category groups
+def category_sort(transaction):
+    category = transaction[2]
+    category_lists = {
+        "merchandise": [],
+        "dining": [],
+        "gas/automotive": [],
+        "other": [],
+        "lodging": [],
+        "internet": [],
+        "airfare": [],
+        "health care": [],
+        "entertainment": [],
+        "other services": [],
+        "payment/credit": []
+    }
+    category_lower = category.lower()
+    if category_lower in category_lists:
+        category_lists[category_lower].append(category)
+    else:
+        print("Invalid category.")
+    return category_lists
     
 # Opens a .csv file and extracts each transaction
 def financeTracker(file):
@@ -38,12 +62,19 @@ def financeTracker(file):
         return transactions
 
 # Connects to a Google Spreadsheet         
-gc = gspread.service_account()
-sh = gc.open("Finances")
-wksh = sh.worksheet("Lindsey_2022")
-rows = financeTracker(lindsey[0])
+def upload(worksheet, file):
+    gc = gspread.service_account()
+    sh = gc.open("Finances")
+    wksh = sh.worksheet(worksheet)
+    rows = financeTracker(file)
 
 # Exports each transaction into the spreadsheet
-for row in rows:
+    for row in rows:
         wksh.insert_row([row[0], row[1], row[2], row[3]], 8)
         time.sleep(2)
+
+financeTracker(jared[0])
+#upload("Jared_2022", jared[0])
+#upload("Jared_2023", jared[1])
+#upload("Lindsey_2022", lindsey[0])
+#upload("Lindsey_2023", lindsey[1])

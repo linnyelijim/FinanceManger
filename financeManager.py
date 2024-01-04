@@ -3,8 +3,14 @@ import gspread
 from datetime import datetime
 import time
 
-lindsey = ["LJ_capOne_2022.csv", "LJ_capOne_2023.csv"]
-jared = ["JH_capOne_2022.csv", "JH_capOne_2023.csv"]
+files = {
+    "lj" : ["LJ_capOne_2022.csv", "LJ_capOne_2023.csv"],
+    "jh" : ["JH_capOne_2022.csv", "JH_capOne_2023.csv"]
+}
+sheets = {
+    "lj" : ["Lindsey_2022", "Lindsey_2023"],
+    "jh" : ["Jared_2022", "Jared_2023"]
+}
 months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 transactions = []
 
@@ -68,13 +74,16 @@ def upload(worksheet, file):
     wksh = sh.worksheet(worksheet)
     rows = financeTracker(file)
 
-# Exports each transaction into the spreadsheet
+    # Exports each transaction into the spreadsheet
     for row in rows:
         wksh.insert_row([row[0], row[1], row[2], row[3]], 8)
         time.sleep(2)
 
-financeTracker(jared[0])
-#upload("Jared_2022", jared[0])
-#upload("Jared_2023", jared[1])
-#upload("Lindsey_2022", lindsey[0])
-#upload("Lindsey_2023", lindsey[1])
+# Uploads all files
+def run():
+    for i in range(2):
+        upload(sheets["jh"][i], files["jh"][i])
+        upload(sheets["lj"][i], files["lj"][i])
+
+# Runs the program
+run()

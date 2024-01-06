@@ -11,8 +11,22 @@ sheets = {
     "lj" : ["Lindsey_2022", "Lindsey_2023"],
     "jh" : ["Jared_2022", "Jared_2023"]
 }
-months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-transactions = []
+months = ["January", "February", "March", "April", "May", 
+          "June", "July", "August", "September", "October", 
+          "November", "December"
+]
+categories = {
+        "merchandise": [],
+        "dining": [],
+        "gas/automotive": [],
+        "other": [],
+        "lodging": [],
+        "internet": [],
+        "airfare": [],
+        "health care": [],
+        "entertainment": [],
+        "payment/credit": []
+}
 
 # Changes the date to a month
 def switch(date):
@@ -26,64 +40,57 @@ def switch(date):
         print("Invalid date format. Please use 'YYYY-MM-DD'.")
         return "undefined"
 
-# Will sort transactions into category groups
+# Will be used to sort by category
 def category_sort(transaction):
     category = transaction[2]
-    category_lists = {
-        "merchandise": [],
-        "dining": [],
-        "gas/automotive": [],
-        "other": [],
-        "lodging": [],
-        "internet": [],
-        "airfare": [],
-        "health care": [],
-        "entertainment": [],
-        "other services": [],
-        "payment/credit": []
-    }
     category_lower = category.lower()
-    if category_lower in category_lists:
-        category_lists[category_lower].append(category)
+    if category_lower == "other services":
+        category_lower = "other"
+    if category_lower in categories:
+        categories[category_lower].append(category)
     else:
         print("Invalid category.")
-    return category_lists
-    
+
+    return categories
+
 # Opens a .csv file and extracts each transaction
 def financeTracker(file):
-    sum = 0.0
+    sum = total_sum = 0.0
+    transactions = []
+
     with open(file, mode='r') as csv_file:
         csv_reader = csv.reader(csv_file)
+
         for row in csv_reader:
             date = row[0]
             month = switch(date)
             name = row[3]
             amount = float(row[5] if row[5] != '' else '-'+ row[6])
             sum += amount if amount > 0 else 0
+            total_sum = round(sum, 2)
             category = row[4] 
             transaction = ((month, name, category, amount))
-            print(transaction)
             transactions.append(transaction)
-        print(sum)
-        return transactions
 
-# Connects to a Google Spreadsheet         
+        return transactions
+        
+# Connects to a Google Spreadsheet and inserts transactions       
 def upload(worksheet, file):
     gc = gspread.service_account()
     sh = gc.open("Finances")
     wksh = sh.worksheet(worksheet)
     rows = financeTracker(file)
 
-    # Exports each transaction into the spreadsheet
     for row in rows:
-        wksh.insert_row([row[0], row[1], row[2], row[3]], 8)
-        time.sleep(2)
+        wksh.insert_row([row[0], row[1], row[2], row[3]], 3)
+        # Used to space out uploads per Google Sheets requirements
+        time.sleep(2) 
 
-# Uploads all files
+# Uploads each file to its associated sheet
 def run():
-    for i in range(2):
-        upload(sheets["jh"][i], files["jh"][i])
-        upload(sheets["lj"][i], files["lj"][i])
+    for key in set(sheets.keys()).union(files.keys()):
+        for i in range(2):
+            upload(sheets[key][i], files[key][i])
 
-# Runs the program
+# Call to run the program
 run()
